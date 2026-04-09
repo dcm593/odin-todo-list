@@ -1,0 +1,24 @@
+{
+  "name": "odin-todo-list",
+  "version": "1.0.0",
+  "description": "From TOP JavaScript Course, a Todo List project.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dcm593/odin-todo-list.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dcm593/odin-todo-list/issues"
+  },
+  "homepage": "https://github.com/dcm593/odin-todo-list#readme",
+  "devDependencies": {
+    "cli": "^1.0.1",
+    "webpack": "^5.106.0"
+  }
+}
