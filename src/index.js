@@ -28,6 +28,3 @@ const createTodo = (title, description, dueDate, priority, notes = "") => {
         getData
     };
 };
-
-// just verifying that js is running via webpack server
-console.log("Hello, World!");
