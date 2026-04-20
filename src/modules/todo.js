@@ -13,5 +13,5 @@ export const createTodo = (title, description, dueDate, priority, notes = "") =>
 
     const getData = () => ({ title, description, dueDate, priority, notes, completed });
 
-    return { toggleCompleted, setNotes, getData };
+    return { id, toggleCompleted, setNotes, getData };
 };

@@ -9,10 +9,42 @@
     <div id="app">
         <!-- Sidebar containing projects -->
         <aside class="sidebar">
-            <h2>Projects</h2>
-            <div class="projects"></div>
-            <div id="add-project-btn">+ New Project</div>
+            <div class="nav">
+                <div>Dashboard</div>
+                <div>Today</div>
+                <div>Upcoming</div>
+                <div>Calendar</div>
+                <div>Complete</div>
+            </div>
+            <div class="projects-section">
+                <h2>Projects</h2>
+                <div class="projects"></div>
+                <button id="add-project-btn">+ New Project</button> <!-- Move new project button to dashboard area? Maybe below welcome text/above card grid? -->
+            </div>
         </aside> 
+        <!-- Main content area for displaying todos -->
+        <main class="main-content">
+            <div class="header">
+                <div class="header-text">
+                    <h2>Welcome, Damon</h2>
+                    <p>Let's get the day started</p>
+                </div>
+                <div class="controls">
+                    <button>Sort</button>
+                    <button>Filter</button>
+                </div>
+            </div>
+            <!-- Dashboard content -->
+            <div class="dashboard-view">
+                <div class="projects-grid"></div>
+            </div>
+            <!-- Project view -->
+            <div class="project-view hidden">
+                <h2 class="project-title"></h2>
+                <div class="todos-list"></div>
+                <button id="add-todo-btn">+ Add Todo</button>
+            </div>
+        </main>
     </div>
 </body>
 </html>
