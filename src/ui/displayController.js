@@ -30,7 +30,26 @@ const renderDashboard = () => {
     projects.forEach((project, index) => {
         const card = document.createElement("div");
         card.classList.add("project-card");
-        card.textContent = project.name;
+
+        const summary = project.getSummary();
+
+        const title = document.createElement("h3");
+        title.textContent = project.name;
+
+        card.appendChild(title);
+
+        if (summary) {
+            const dueDate = document.createElement("p");
+            dueDate.textContent = `Due: ${format(new Date(summary.dueDate), "MMM dd, yyyy '@' h:mma")}`;
+
+            const priority = document.createElement("span");
+            priority.textContent = `Priority: ${summary.priority}`;
+
+            const description = document.createElement("p");
+            description.textContent = summary.description;
+
+            card.append(dueDate, priority, description);
+        }
 
         card.addEventListener("click", () => {
             openProject(index);
