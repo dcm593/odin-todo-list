@@ -1,4 +1,7 @@
 import { appController } from "../modules/appController.js";
+import { format } from "date-fns";
+
+let currentProjectIndex = null;
 
 // Rendering sidebar
 const renderProjects = () => {
@@ -38,6 +41,8 @@ const renderDashboard = () => {
 };
 
 const openProject = (index) => {
+    currentProjectIndex = index;
+
     const dashboard = document.querySelector(".dashboard-view");
     const projectView = document.querySelector(".project-view");
 
@@ -69,7 +74,7 @@ const renderTodos = (projectIndex) => {
         description.textContent = data.description;
 
         const dueDate = document.createElement("time");
-        dueDate.textContent = `Due: ${data.dueDate}`;
+        dueDate.textContent = `Due: ${format(new Date(data.dueDate), "MMM dd, yyyy '@' h:mma")}`;
 
         const priority = document.createElement("span");
         priority.textContent = `Priority: ${data.priority}`;
@@ -101,6 +106,9 @@ const goBack = () => {
 const init = () => {
     renderProjects(); // sidebar
     renderDashboard(); // project grid
+
+    document.querySelector("#back-btn").addEventListener("click", goBack);
+    document.querySelector("#dashboard-btn").addEventListener("click", goBack);
 };
 
 export const displayController = { init, renderProjects, renderTodos, goBack };
