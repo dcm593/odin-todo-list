@@ -43,9 +43,22 @@
                 <h2 class="project-title"></h2>
                 <button id="back-btn">Return to dashboard</button>
                 <div class="todos-list"></div>
-                <button id="add-todo-btn">+ Add Todo</button>
             </div>
         </main>
     </div>
+    <dialog>
+        <form>
+            <button type="button" value="cancel" formmethod="dialog" id="close">&#10006;</button>
+            <fieldset>
+                <legend>New Project</legend>
+                <input type="text" id="project-name" name="project-name" placeholder="Project Name" required/>
+                <legend>Todo List</legend>
+                <div id="todo-form-container"></div>
+                <button type ="button" id="add-todo-btn">+ Add Todo</button>
+                <button type="button" value="cancel" formmethod="dialog" id="cancel">Cancel</button>
+                <button type="submit" id="submit-btn" value="default">Create Project</button>
+            </fieldset>
+        </form>
+    </dialog>
 </body>
 </html>

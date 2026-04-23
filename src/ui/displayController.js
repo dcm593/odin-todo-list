@@ -1,5 +1,6 @@
 import { appController } from "../modules/appController.js";
 import { format } from "date-fns";
+import { createTodo } from "../modules/todo.js";
 
 let currentProjectIndex = null;
 
@@ -122,12 +123,75 @@ const goBack = () => {
     document.querySelector(".project-view").classList.add("hidden");
 };
 
+const createTodoForm = () => {
+    const row = document.createElement("div");
+    row.classList.add("todo-form-row");
+    
+    const titleInput = document.createElement("input");
+    titleInput.placeholder = "Todo Title";
+    titleInput.classList.add("todo-title-input");
+
+    const descriptionInput = document.createElement("input");
+    descriptionInput.placeholder = "Description";
+    descriptionInput.classList.add("todo-description-input");
+
+    const dateInput = document.createElement("input");
+    dateInput.type = "datetime-local";
+    dateInput.classList.add("todo-date-input");
+
+    const prioritySelect = document.createElement("select");
+    prioritySelect.classList.add("todo-priority-select");
+    ["Low", "Medium", "High"].forEach(level => {
+        const option = document.createElement("option");
+        option.value = level;
+        option.textContent = level;
+        prioritySelect.appendChild(option);
+    });
+
+    row.append(titleInput, descriptionInput, dateInput, prioritySelect);
+    return row;
+};
+
+form.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const projectNameInput = document.querySelector("#project-name");
+    const projectName = projectNameInput.value.trim();
+
+    if (!projectName) return;
+
+    const newProject = appController.addProject(projectName);
+
+    // Continue HERE - had to commit because shift ended. Submitting the form will add a project.
+});
+
 const init = () => {
     renderProjects(); // sidebar
     renderDashboard(); // project grid
 
     document.querySelector("#back-btn").addEventListener("click", goBack);
     document.querySelector("#dashboard-btn").addEventListener("click", goBack);
+
+    const dialog = document.querySelector("dialog");
+    const todoFormContainer = document.querySelector("#todo-form-container");
+
+    document.querySelector("#add-project-btn").addEventListener("click", () => {
+        dialog.showModal();
+        todoFormContainer.innerHTML = "";
+        todoFormContainer.appendChild(createTodoForm());
+    });
+
+    document.querySelector("#close").addEventListener("click", () => {
+        dialog.close();
+    });
+
+    document.querySelector("#cancel").addEventListener("click", () => {
+        dialog.close();
+    });
+
+    document.querySelector("#add-todo-btn").addEventListener("click", () => {
+        todoFormContainer.appendChild(createTodoForm());
+    });
 };
 
 export const displayController = { init, renderProjects, renderTodos, goBack };
