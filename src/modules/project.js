@@ -1,11 +1,19 @@
 export const createProject = (name) => {
     const todos = [];
 
+    let completed = false;
+
     const addTodo = (todo) => {
         todos.push(todo);
     };
 
     const getTodos = () => ({ todos });
+
+    const toggleCompleted = () => {
+        completed = !completed;
+    };
+
+    const isCompleted = () => completed;
 
     // Helper function to get a summary of the project (e.g. for dashboard cards)
     const getSummary = () => {
@@ -30,5 +38,5 @@ export const createProject = (name) => {
         };
     };
 
-    return { name, addTodo, getTodos, getSummary };
+    return { name, addTodo, getTodos, getSummary, toggleCompleted, isCompleted };
 };
