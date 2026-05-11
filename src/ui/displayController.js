@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { createTodo } from "../modules/todo.js";
 
 let currentProjectIndex = null;
-
+let currentView = "dashboard";
 
 
 // Rendering sidebar
@@ -25,88 +25,97 @@ const renderProjects = () => {
 
 
 
+// Create project cards for dashboard view
+const createProjectCard = (project, index) => {
+    const card = document.createElement("div");
+    card.classList.add("project-card");
+
+    const summary = project.getSummary();
+
+    const header = document.createElement("div");
+    header.classList.add("project-card-header");
+
+    const title = document.createElement("h3");
+    title.textContent = project.name;
+
+    const actions = document.createElement("div");
+    actions.classList.add("project-actions");
+
+    const completeBtn = document.createElement("button");
+    completeBtn.textContent = project.isCompleted() ? "↩" : "✔";
+    completeBtn.classList.add("complete-project-btn");
+
+    completeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+
+        const confirmed = confirm(`${project.isCompleted() ? `Move "${project.name}" back to active projects?` : `Mark "${project.name}" as completed?`}`);
+
+        if (!confirmed) return;
+
+        project.toggleCompleted();
+
+        appController.saveProjects();
+
+        refreshUI();
+    });
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "🗑";
+    deleteBtn.classList.add("delete-project-btn");
+
+    deleteBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        
+        const confirmed = confirm(`Delete "${project.name}" permanently?`);
+
+        if (!confirmed) return;
+
+        appController.deleteProject(index);
+        appController.saveProjects();
+        refreshUI();
+    });
+
+    actions.append(completeBtn, deleteBtn);
+    header.append(title, actions);
+    card.append(header);
+
+    if (summary) {
+        const dueDate = document.createElement("p");
+        dueDate.textContent = `Due: ${format(new Date(summary.dueDate), "MMM dd, yyyy '@' h:mma")}`;
+
+        const priority = document.createElement("span");
+        priority.textContent = `Priority: ${summary.priority}`;
+
+        const description = document.createElement("p");
+        description.textContent = summary.description;
+
+        card.append(dueDate, priority, description);
+    }
+
+    card.addEventListener("click", () => {
+        openProject(index);
+    });
+
+    return card;
+};
+
 // Rendering dashboard / projects grid view
 const renderDashboard = () => {
     const grid = document.querySelector(".projects-grid");
     grid.innerHTML = "";
 
-    const projects = appController.getProjects().projects.filter(proj => !proj.isCompleted());
+    const allProjects = appController.getProjects().projects;
 
-    projects.forEach((project, index) => {
-        const card = document.createElement("div");
-        card.classList.add("project-card");
+    allProjects.forEach((project, index) => {
+        if (project.isCompleted()) return; // skip completed projects in dashboard view
 
-        const summary = project.getSummary();
-
-        const title = document.createElement("h3");
-        title.textContent = project.name;
-
-        const actions = document.createElement("div");
-        actions.classList.add("project-actions");
-
-        const completeBtn = document.createElement("button");
-        completeBtn.textContent = project.isCompleted() ? "↩" : "✔";
-        completeBtn.classList.add("complete-project-btn");
-
-        completeBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-
-            const confirmed = confirm(`${project.isCompleted() ? 'Move "${project.name}" back to active projects?' : 'Mark "${project.name}" as completed?'}`);
-
-            if (!confirmed) return;
-
-            project.toggleCompleted();
-
-            appController.saveProjects();
-
-            renderProjects();
-            renderDashboard();
-        });
-
-        const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "🗑";
-        deleteBtn.classList.add("delete-project-btn");
-
-        deleteBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            
-            const confirmed = confirm('Delete "${project.name}" permanently?');
-
-            if (!confirmed) return;
-
-            appController.deleteProject(index);
-            appController.saveProjects();
-            renderProjects();
-            renderDashboard();
-        });
-
-        actions.append(completeBtn, deleteBtn);
-
-        card.append(title, actions);
-
-        if (summary) {
-            const dueDate = document.createElement("p");
-            dueDate.textContent = `Due: ${format(new Date(summary.dueDate), "MMM dd, yyyy '@' h:mma")}`;
-
-            const priority = document.createElement("span");
-            priority.textContent = `Priority: ${summary.priority}`;
-
-            const description = document.createElement("p");
-            description.textContent = summary.description;
-
-            card.append(dueDate, priority, description);
-        }
-
-        card.addEventListener("click", () => {
-            openProject(index);
-        });
-
-        grid.appendChild(card);
+        grid.appendChild(createProjectCard(project, index));
     });
 };
 
 const openProject = (index) => {
     currentProjectIndex = index;
+    currentView = "project";
 
     const dashboard = document.querySelector(".dashboard-view");
     const projectView = document.querySelector(".project-view");
@@ -114,7 +123,7 @@ const openProject = (index) => {
     dashboard.classList.add("hidden");
     projectView.classList.remove("hidden");
 
-    renderTodos(index);
+    refreshUI();
 };
 
 
@@ -168,8 +177,12 @@ const renderTodos = (projectIndex) => {
 
 // Back to dashboard
 const goBack = () => {
+    currentView = "dashboard";
+
     document.querySelector(".dashboard-view").classList.remove("hidden");
     document.querySelector(".project-view").classList.add("hidden");
+
+    refreshUI();
 };
 
 const createTodoForm = () => {
@@ -234,8 +247,7 @@ document.querySelector("form").addEventListener("submit", (e) => {
     document.querySelector("dialog").close();
 
     // Re-render UI
-    renderProjects();
-    renderDashboard();
+    refreshUI();
 });
 
 
@@ -245,90 +257,49 @@ const renderCompletedProjects = () => {
     const grid = document.querySelector(".projects-grid");
     grid.innerHTML = "";
 
-    const completeProjects = appController.getProjects().projects.filter(proj => proj.isCompleted());
+    const allProjects = appController.getProjects().projects;
 
-    completeProjects.forEach((project, index) => {
-        const card = document.createElement("div");
-        card.classList.add("project-card");
+    allProjects.forEach((project, index) => {
+        if (!project.isCompleted()) return; // only show completed projects in this view
 
-        const summary = project.getSummary();
-
-        const title = document.createElement("h3");
-        title.textContent = project.name;
-
-        const actions = document.createElement("div");
-        actions.classList.add("project-actions");
-
-        const completeBtn = document.createElement("button");
-        completeBtn.textContent = project.isCompleted() ? "↩" : "✔";
-        completeBtn.classList.add("complete-project-btn");
-
-        completeBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-
-            const confirmed = confirm(`${project.isCompleted() ? 'Move "${project.name}" back to active projects?' : 'Mark "${project.name}" as completed?'}`);
-
-            if (!confirmed) return;
-
-            project.toggleCompleted();
-
-            appController.saveProjects();
-
-            renderProjects();
-            renderDashboard();
-        });
-
-        const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "🗑";
-        deleteBtn.classList.add("delete-project-btn");
-
-        deleteBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            
-            const confirmed = confirm('Delete "${project.name}" permanently?');
-
-            if (!confirmed) return;
-
-            appController.deleteProject(index);
-            appController.saveProjects();
-            renderProjects();
-            renderDashboard();
-        });
-
-        actions.append(completeBtn, deleteBtn);
-
-        card.appendChild(title);
-
-        if (summary) {
-            const dueDate = document.createElement("p");
-            dueDate.textContent = `Due: ${format(new Date(summary.dueDate), "MMM dd, yyyy '@' h:mma")}`;
-
-            const priority = document.createElement("span");
-            priority.textContent = `Priority: ${summary.priority}`;
-
-            const description = document.createElement("p");
-            description.textContent = summary.description;
-
-            card.append(dueDate, priority, description);
-        }
-
-        card.addEventListener("click", () => {
-            openProject(index);
-        });
-
-        grid.appendChild(card);
+        grid.appendChild(createProjectCard(project, index));
     });
 };
 
 
 
+const refreshUI = () => {
+    renderProjects();
+
+    switch (currentView) {
+        case "dashboard":
+            renderDashboard();
+            break;
+        case "completed":
+            renderCompletedProjects();
+            break;
+        case "project":
+            renderTodos(currentProjectIndex);
+            break;
+    }
+};
+
+
+
 const init = () => {
-    renderProjects(); // sidebar
-    renderDashboard(); // project grid
+    refreshUI();
 
     document.querySelector("#back-btn").addEventListener("click", goBack);
     document.querySelector("#dashboard-btn").addEventListener("click", goBack);
-    document.querySelector("#complete-btn").addEventListener("click", renderCompletedProjects);
+
+    const openCompleteTab = () => {
+        currentView = "completed";
+        document.querySelector(".dashboard-view").classList.remove("hidden");
+        document.querySelector(".project-view").classList.add("hidden");
+        refreshUI();
+    };
+
+    document.querySelector("#complete-btn").addEventListener("click", openCompleteTab);
 
     const dialog = document.querySelector("dialog");
     const todoFormContainer = document.querySelector("#todo-form-container");
