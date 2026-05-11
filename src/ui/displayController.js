@@ -4,6 +4,7 @@ import { createTodo } from "../modules/todo.js";
 
 let currentProjectIndex = null;
 let currentView = "dashboard";
+let previousView = "dashboard";
 
 
 // Rendering sidebar
@@ -11,7 +12,11 @@ const renderProjects = () => {
     const projectsContainer = document.querySelector(".projects");
     projectsContainer.innerHTML = "";
 
-    appController.getProjects().projects.forEach((project, index) => {
+    const allProjects = appController.getProjects().projects;
+
+    allProjects.forEach((project, index) => {
+        if (project.isCompleted()) return; // skip completed projects in sidebar
+
         const projectElement = document.createElement("div");
         projectElement.textContent = project.name;
 
@@ -115,7 +120,11 @@ const renderDashboard = () => {
 
 const openProject = (index) => {
     currentProjectIndex = index;
+    previousView = currentView;
     currentView = "project";
+
+    const backBtn = document.querySelector("#back-btn");
+    backBtn.textContent = previousView === "completed" ? "Return to Completed Projects" : "Return to Dashboard";
 
     const dashboard = document.querySelector(".dashboard-view");
     const projectView = document.querySelector(".project-view");
@@ -177,7 +186,7 @@ const renderTodos = (projectIndex) => {
 
 // Back to dashboard
 const goBack = () => {
-    currentView = "dashboard";
+    currentView = previousView;
 
     document.querySelector(".dashboard-view").classList.remove("hidden");
     document.querySelector(".project-view").classList.add("hidden");

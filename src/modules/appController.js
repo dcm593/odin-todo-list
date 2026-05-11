@@ -22,6 +22,10 @@ const loadProjects = () => {
     storedProjects.forEach(projData => {
         const project = createProject(projData.name);
 
+        if (projData.completed) {
+            project.toggleCompleted();
+        }
+
         projData.todos.forEach(todoData => {
             const todo = createTodo(todoData.title, todoData.description, todoData.dueDate, todoData.priority, todoData.notes);
 
@@ -39,6 +43,7 @@ const loadProjects = () => {
 const saveProjects = () => {
     const dataToStore = projects.map(project => ({
         name: project.name,
+        completed: project.isCompleted(),
         todos: project.getTodos().todos.map(todo => todo.getData())
     }));
 
