@@ -59,9 +59,9 @@ const createProjectCard = (project, index) => {
 
         project.toggleCompleted();
 
-        appController.saveProjects();
-
         refreshUI();
+
+        appController.saveProjects();
     });
 
     const deleteBtn = document.createElement("button");
@@ -104,35 +104,72 @@ const createProjectCard = (project, index) => {
     return card;
 };
 
-// Rendering dashboard / projects grid view
+const getSortedProjects = (projects) => {
+    const priorityMap = { "High": 3, "Medium": 2, "Low": 1 };
+
+    return [...projects].sort((a, b) => {
+        const summaryA = a.getSummary();
+        const summaryB = b.getSummary();
+
+        // Projects without todos should be sorted to the end
+        if (!summaryA) return 1;
+        if (!summaryB) return -1;
+
+        // Sort by priority
+        const priorityDifference = priorityMap[summaryB.priority] - priorityMap[summaryA.priority];
+
+        if (priorityDifference !== 0) {
+            return priorityDifference;
+        }
+
+        // Date comparison (earliest due date first)
+        return new Date(summaryA.dueDate) - new Date(summaryB.dueDate);
+    });
+};
+
+// Rendering dashboard / projects grid view, and setup centralized view state management
 const renderDashboard = () => {
     const grid = document.querySelector(".projects-grid");
     grid.innerHTML = "";
 
     const allProjects = appController.getProjects().projects;
 
-    allProjects.forEach((project, index) => {
+    const sortedProjects = getSortedProjects(allProjects);
+
+    sortedProjects.forEach((project) => {
         if (project.isCompleted()) return; // skip completed projects in dashboard view
+
+        const index = allProjects.indexOf(project);
 
         grid.appendChild(createProjectCard(project, index));
     });
 };
 
-const openProject = (index) => {
-    currentProjectIndex = index;
-    previousView = currentView;
-    currentView = "project";
-
-    const backBtn = document.querySelector("#back-btn");
-    backBtn.textContent = previousView === "completed" ? "Return to Completed Projects" : "Return to Dashboard";
+const setView = (view) => {
+    currentView = view;
 
     const dashboard = document.querySelector(".dashboard-view");
     const projectView = document.querySelector(".project-view");
 
-    dashboard.classList.add("hidden");
-    projectView.classList.remove("hidden");
+    if (view === "project") {
+        dashboard.classList.add("hidden");
+        projectView.classList.remove("hidden");
+    } else {
+        dashboard.classList.remove("hidden");
+        projectView.classList.add("hidden");
+    }
 
     refreshUI();
+};
+
+const openProject = (index) => {
+    currentProjectIndex = index;
+    previousView = currentView;
+
+    const backBtn = document.querySelector("#back-btn");
+    backBtn.textContent = previousView === "completed" ? "Return to Completed Projects" : "Return to Dashboard";
+
+    setView("project");
 };
 
 
@@ -186,12 +223,7 @@ const renderTodos = (projectIndex) => {
 
 // Back to dashboard
 const goBack = () => {
-    currentView = previousView;
-
-    document.querySelector(".dashboard-view").classList.remove("hidden");
-    document.querySelector(".project-view").classList.add("hidden");
-
-    refreshUI();
+    setView(previousView);
 };
 
 const createTodoForm = () => {
@@ -268,8 +300,12 @@ const renderCompletedProjects = () => {
 
     const allProjects = appController.getProjects().projects;
 
-    allProjects.forEach((project, index) => {
+    const sortedProjects = getSortedProjects(allProjects);
+
+    sortedProjects.forEach((project) => {
         if (!project.isCompleted()) return; // only show completed projects in this view
+
+        const index = allProjects.indexOf(project);
 
         grid.appendChild(createProjectCard(project, index));
     });
@@ -299,13 +335,15 @@ const init = () => {
     refreshUI();
 
     document.querySelector("#back-btn").addEventListener("click", goBack);
-    document.querySelector("#dashboard-btn").addEventListener("click", goBack);
+
+    const openDashboardTab = () => {
+        setView("dashboard");
+    };
+
+    document.querySelector("#dashboard-btn").addEventListener("click", openDashboardTab);
 
     const openCompleteTab = () => {
-        currentView = "completed";
-        document.querySelector(".dashboard-view").classList.remove("hidden");
-        document.querySelector(".project-view").classList.add("hidden");
-        refreshUI();
+        setView("completed");
     };
 
     document.querySelector("#complete-btn").addEventListener("click", openCompleteTab);
