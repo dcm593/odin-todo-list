@@ -1,10 +1,13 @@
 import { appController } from "../modules/appController.js";
 import { format } from "date-fns";
 import { createTodo } from "../modules/todo.js";
+import { ca } from "date-fns/locale";
 
 let currentProjectIndex = null;
 let currentView = "dashboard";
 let previousView = "dashboard";
+
+const calendarOffsets = {};
 
 
 // Rendering sidebar
@@ -150,14 +153,22 @@ const setView = (view) => {
 
     const dashboard = document.querySelector(".dashboard-view");
     const projectView = document.querySelector(".project-view");
+    const caldendarView = document.querySelector(".calendar-view");
 
-    if (view === "project") {
-        dashboard.classList.add("hidden");
-        projectView.classList.remove("hidden");
-    } else {
-        dashboard.classList.remove("hidden");
-        projectView.classList.add("hidden");
-    }
+    dashboard.classList.add("hidden");
+    projectView.classList.add("hidden");
+    caldendarView.classList.add("hidden");
+
+    switch (view) {
+        case "project":
+            projectView.classList.remove("hidden");
+            break;
+        case "calendar":
+            caldendarView.classList.remove("hidden");
+            break;
+        default:
+            dashboard.classList.remove("hidden");
+    } 
 
     refreshUI();
 };
@@ -313,6 +324,124 @@ const renderCompletedProjects = () => {
 
 
 
+// Rendering for content inside Caldendar tab
+const renderCalendar = () => {
+    const calendarBody = document.querySelector(".calendar-body");
+    const calendarMonth = document.querySelector(".calendar-month");
+
+    calendarBody.innerHTML = "";
+
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+
+    calendarMonth.textContent = format(today, "MMMM yyyy");
+
+    const firstDayOfMonth = new Date(year, month, 1);
+    const lastDayOfMonth = new Date(year, month + 1, 0);
+
+    const daysInMonth = lastDayOfMonth.getDate();
+    const startDay = firstDayOfMonth.getDay();
+
+    const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    daysOfWeek.forEach(day => {
+        const header = document.createElement("div");   
+        header.classList.add("calendar-day-name");
+        header.textContent = day;
+
+        calendarBody.appendChild(header);
+    });
+
+    // Empty cells before month start
+    for (let i = 0; i < startDay; i++) {
+        const emptyCell = document.createElement("div");
+        emptyCell.classList.add("calendar-cell", "empty");
+        calendarBody.appendChild(emptyCell);
+    }
+
+    const allProjects = appController.getProjects().projects;
+
+    for (let day = 1; day <= daysInMonth; day++) {
+        const cell = document.createElement("div");
+        cell.classList.add("calendar-cell");
+
+        const dateLabel = document.createElement("div");
+        dateLabel.classList.add("calendar-date");
+        dateLabel.textContent = day;
+
+        cell.appendChild(dateLabel);
+
+        const matchingProjects = [];
+
+        allProjects.forEach((project, index) => {
+            if (project.isCompleted()) return;
+
+            const summary = project.getSummary();
+
+            if (!summary?.dueDate) return;
+
+            const dueDate = new Date(summary.dueDate);
+
+            if (dueDate.getFullYear() === year && dueDate.getMonth() === month && dueDate.getDate() === day) {
+                matchingProjects.push({ project, index, summary });
+            }
+        });
+
+        if (matchingProjects.length > 0) {
+            const offsetKey = `${year}-${month}-${day}`;
+
+            if (!(offsetKey in calendarOffsets)) {
+                calendarOffsets[offsetKey] = 0;
+            }
+
+            const currentOffset = calendarOffsets[offsetKey] % matchingProjects.length;
+
+            const currentItem = matchingProjects[currentOffset];
+
+            const projectDiv = document.createElement("div");
+            projectDiv.classList.add("calendar-project");
+            
+            projectDiv.innerHTML = `<strong>${currentItem.project.name}</strong><div class="calendar-priority">Priority: ${currentItem.summary.priority}</div>`;
+
+            projectDiv.addEventListener("click", () => {
+                openProject(currentItem.index);
+            });
+
+            cell.appendChild(projectDiv);
+
+            if (matchingProjects.length > 1) {
+                const upBtn = document.createElement("button");
+                upBtn.textContent = "▲";
+                upBtn.classList.add("calendar-arrow", "up");
+
+                upBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+
+                    calendarOffsets[offsetKey] = (calendarOffsets[offsetKey] - 1 + matchingProjects.length) % matchingProjects.length;
+                    renderCalendar();
+                });
+
+                const downBtn = document.createElement("button");
+                downBtn.textContent = "▼";
+                downBtn.classList.add("calendar-arrow", "down");
+
+                downBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+
+                    calendarOffsets[offsetKey] = (calendarOffsets[offsetKey] + 1) % matchingProjects.length;
+                    renderCalendar();
+                });
+
+                cell.append(upBtn, downBtn);
+            }
+        }
+
+        calendarBody.appendChild(cell);
+    }
+};
+
+// Centralized function to refresh the UI based on current view state
 const refreshUI = () => {
     renderProjects();
 
@@ -322,6 +451,9 @@ const refreshUI = () => {
             break;
         case "completed":
             renderCompletedProjects();
+            break;
+        case "calendar":
+            renderCalendar();
             break;
         case "project":
             renderTodos(currentProjectIndex);
@@ -336,17 +468,17 @@ const init = () => {
 
     document.querySelector("#back-btn").addEventListener("click", goBack);
 
-    const openDashboardTab = () => {
+    document.querySelector("#dashboard-btn").addEventListener("click", () => {
         setView("dashboard");
-    };
+    });
 
-    document.querySelector("#dashboard-btn").addEventListener("click", openDashboardTab);
+    document.querySelector("#calendar-btn").addEventListener("click", () => {
+        setView("calendar");
+    });
 
-    const openCompleteTab = () => {
+    document.querySelector("#complete-btn").addEventListener("click", () => {
         setView("completed");
-    };
-
-    document.querySelector("#complete-btn").addEventListener("click", openCompleteTab);
+    });
 
     const dialog = document.querySelector("dialog");
     const todoFormContainer = document.querySelector("#todo-form-container");
