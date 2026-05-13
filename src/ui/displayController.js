@@ -1,13 +1,13 @@
 import { appController } from "../modules/appController.js";
 import { format } from "date-fns";
 import { createTodo } from "../modules/todo.js";
-import { ca } from "date-fns/locale";
+import { ca, is } from "date-fns/locale";
 
 let currentProjectIndex = null;
 let currentView = "dashboard";
 let previousView = "dashboard";
-
 const calendarOffsets = {};
+let currentCalendarDate = new Date();
 
 
 // Rendering sidebar
@@ -331,11 +331,10 @@ const renderCalendar = () => {
 
     calendarBody.innerHTML = "";
 
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth();
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
 
-    calendarMonth.textContent = format(today, "MMMM yyyy");
+    calendarMonth.textContent = format(currentCalendarDate, "MMMM yyyy");
 
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
@@ -353,26 +352,71 @@ const renderCalendar = () => {
         calendarBody.appendChild(header);
     });
 
-    // Empty cells before month start
-    for (let i = 0; i < startDay; i++) {
-        const emptyCell = document.createElement("div");
-        emptyCell.classList.add("calendar-cell", "empty");
-        calendarBody.appendChild(emptyCell);
-    }
+    // Empty cells before/after current month
+    const totalCells = 42; // 7 days * 6 rows
 
-    const allProjects = appController.getProjects().projects;
+    const prevMonthLastDay = new Date(year, month, 0).getDate();
 
-    for (let day = 1; day <= daysInMonth; day++) {
+    let currentDay = 1;
+    let nextMonthDay = 1;
+
+    for (let cellIndex = 0; cellIndex < totalCells; cellIndex++) {
         const cell = document.createElement("div");
         cell.classList.add("calendar-cell");
 
         const dateLabel = document.createElement("div");
         dateLabel.classList.add("calendar-date");
-        dateLabel.textContent = day;
+
+        let displayDay;
+        let displayMonth = month;
+        let displayYear = year;
+        let isCurrentMonth = true;
+
+        // Previous month overflow
+        if (cellIndex < startDay) {
+            displayDay = prevMonthLastDay - startDay + cellIndex + 1;
+            displayMonth = month - 1;
+
+            if (displayMonth < 0) {
+                displayMonth = 11;
+                displayYear--;
+            }
+
+            isCurrentMonth = false;
+        }
+
+        // Current month
+        else if (currentDay <= daysInMonth) {
+            displayDay = currentDay;
+            currentDay++;
+        }
+
+        // Next month overflow
+        else {
+            displayDay = nextMonthDay;
+
+            displayMonth = month + 1;
+
+            if (displayMonth > 11) {
+                displayMonth = 0;
+                displayYear++;
+            }
+
+            nextMonthDay++;
+            isCurrentMonth = false;
+        }
+
+        dateLabel.textContent = displayDay;
+
+        if (!isCurrentMonth) {
+            cell.classList.add("other-month");
+        }
 
         cell.appendChild(dateLabel);
 
         const matchingProjects = [];
+
+        const allProjects = appController.getProjects().projects;
 
         allProjects.forEach((project, index) => {
             if (project.isCompleted()) return;
@@ -383,13 +427,13 @@ const renderCalendar = () => {
 
             const dueDate = new Date(summary.dueDate);
 
-            if (dueDate.getFullYear() === year && dueDate.getMonth() === month && dueDate.getDate() === day) {
+            if (dueDate.getFullYear() === displayYear && dueDate.getMonth() === displayMonth && dueDate.getDate() === displayDay) {
                 matchingProjects.push({ project, index, summary });
             }
         });
 
         if (matchingProjects.length > 0) {
-            const offsetKey = `${year}-${month}-${day}`;
+            const offsetKey = `${displayYear}-${displayMonth}-${displayDay}`;
 
             if (!(offsetKey in calendarOffsets)) {
                 calendarOffsets[offsetKey] = 0;
@@ -441,6 +485,18 @@ const renderCalendar = () => {
     }
 };
 
+const goToPreviousMonth = () => {
+    currentCalendarDate = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth() - 1, 1);
+    renderCalendar();
+};
+
+const goToNextMonth = () => {
+    currentCalendarDate = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth() + 1, 1);
+    renderCalendar();
+};
+
+
+
 // Centralized function to refresh the UI based on current view state
 const refreshUI = () => {
     renderProjects();
@@ -473,8 +529,13 @@ const init = () => {
     });
 
     document.querySelector("#calendar-btn").addEventListener("click", () => {
+        currentCalendarDate = new Date(); // reset to current month when opening calendar
         setView("calendar");
     });
+
+    document.querySelector("#calendar-prev-btn").addEventListener("click", goToPreviousMonth);
+
+    document.querySelector("#calendar-next-btn").addEventListener("click", goToNextMonth);
 
     document.querySelector("#complete-btn").addEventListener("click", () => {
         setView("completed");
