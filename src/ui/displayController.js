@@ -170,7 +170,38 @@ const setView = (view) => {
             dashboard.classList.remove("hidden");
     } 
 
+    updateHeaderUI();
     refreshUI();
+};
+
+const updateHeaderUI = () => {
+    const headerTitle = document.querySelector("#main-header-title");
+    const headerSubtitle = document.querySelector("#main-header-subtitle");
+    const controls = document.querySelector(".controls");
+    const USER_NAME = "Damon"; // Placeholder for future user system (if I decide to implement one)
+
+    switch (currentView) {
+        case "dashboard":
+            headerTitle.textContent = `Welcome, ${USER_NAME}`;
+            headerSubtitle.textContent = "Let's get the day started";
+            controls.classList.remove("hidden");
+            break;
+        case "completed":
+            headerTitle.textContent = "Completed Projects";
+            headerSubtitle.textContent = "Go ahead, admire your handiwork";
+            controls.classList.add("hidden");
+            break;
+        case "calendar":
+            headerTitle.textContent = "Your Calendar";
+            headerSubtitle.textContent = "Visualize which fires to put out first";
+            controls.classList.add("hidden");
+            break;
+        case "project":
+            controls.classList.add("hidden");
+            break;
+        default:
+            controls.classList.add("hidden");
+    }
 };
 
 const openProject = (index) => {
