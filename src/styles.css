@@ -240,8 +240,18 @@ body {
     font-size: 0.85rem;
 }
 
+.calendar-todo-title {
+    font-weight: bold;
+}
+
 .calendar-priority {
     font-size: 0.75rem;
+}
+
+.calendar-project-name {
+    font-size: 0.65rem;
+    color: #777;
+    font-style: italic;
 }
 
 .calendar-arrow {

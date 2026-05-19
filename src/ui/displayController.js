@@ -441,43 +441,54 @@ const renderCalendar = () => {
 
         if (!isCurrentMonth) {
             cell.classList.add("other-month");
+
+            cell.addEventListener("click", () => {
+                currentCalendarDate = new Date(displayYear, displayMonth, 1);
+                renderCalendar();
+            });
         }
 
         cell.appendChild(dateLabel);
 
-        const matchingProjects = [];
+        const matchingItems = [];
 
         const allProjects = appController.getProjects().projects;
 
         allProjects.forEach((project, index) => {
             if (project.isCompleted()) return;
 
-            const summary = project.getSummary();
+            project.getTodos().todos.forEach(todo => {
+                const data = todo.getData();
 
-            if (!summary?.dueDate) return;
+                if (!data.dueDate) return;
 
-            const dueDate = new Date(summary.dueDate);
+                const dueDate = new Date(data.dueDate);
 
-            if (dueDate.getFullYear() === displayYear && dueDate.getMonth() === displayMonth && dueDate.getDate() === displayDay) {
-                matchingProjects.push({ project, index, summary });
-            }
+                if (dueDate.getFullYear() === displayYear && dueDate.getMonth() === displayMonth && dueDate.getDate() === displayDay) {
+                    matchingItems.push({ project, index, todoData: data });
+                }
+            });
         });
 
-        if (matchingProjects.length > 0) {
+        if (matchingItems.length > 0) {
             const offsetKey = `${displayYear}-${displayMonth}-${displayDay}`;
 
             if (!(offsetKey in calendarOffsets)) {
                 calendarOffsets[offsetKey] = 0;
             }
 
-            const currentOffset = calendarOffsets[offsetKey] % matchingProjects.length;
+            const currentOffset = calendarOffsets[offsetKey] % matchingItems.length;
 
-            const currentItem = matchingProjects[currentOffset];
+            const currentItem = matchingItems[currentOffset];
 
             const projectDiv = document.createElement("div");
             projectDiv.classList.add("calendar-project");
             
-            projectDiv.innerHTML = `<strong>${currentItem.project.name}</strong><div class="calendar-priority">Priority: ${currentItem.summary.priority}</div>`;
+            projectDiv.innerHTML = `
+                <div class="calendar-todo-title">${currentItem.todoData.title}</div>
+                <div class="calendar-priority">Priority: ${currentItem.todoData.priority}</div>
+                <div class="calendar-project-name">Project: ${currentItem.project.name}</div>
+            `;
 
             projectDiv.addEventListener("click", () => {
                 openProject(currentItem.index);
@@ -485,7 +496,7 @@ const renderCalendar = () => {
 
             cell.appendChild(projectDiv);
 
-            if (matchingProjects.length > 1) {
+            if (matchingItems.length > 1) {
                 const upBtn = document.createElement("button");
                 upBtn.textContent = "▲";
                 upBtn.classList.add("calendar-arrow", "up");
@@ -493,7 +504,7 @@ const renderCalendar = () => {
                 upBtn.addEventListener("click", (e) => {
                     e.stopPropagation();
 
-                    calendarOffsets[offsetKey] = (calendarOffsets[offsetKey] - 1 + matchingProjects.length) % matchingProjects.length;
+                    calendarOffsets[offsetKey] = (calendarOffsets[offsetKey] - 1 + matchingItems.length) % matchingItems.length;
                     renderCalendar();
                 });
 
@@ -504,7 +515,7 @@ const renderCalendar = () => {
                 downBtn.addEventListener("click", (e) => {
                     e.stopPropagation();
 
-                    calendarOffsets[offsetKey] = (calendarOffsets[offsetKey] + 1) % matchingProjects.length;
+                    calendarOffsets[offsetKey] = (calendarOffsets[offsetKey] + 1) % matchingItems.length;
                     renderCalendar();
                 });
 
