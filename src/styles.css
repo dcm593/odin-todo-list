@@ -89,6 +89,37 @@ body {
     gap: 0.5rem;
 }
 
+.control-wrapper {
+    position: relative;
+}
+
+.control-panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 160px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-top: 0.25rem;
+    z-index: 10;
+    overflow: hidden;
+}
+
+.control-panel div {
+    padding: 0.5rem;
+    cursor: pointer;
+}
+
+.control-panel div:hover {
+    background: #eee;
+}
+
+.control-panel div.active {
+    font-weight: bold;
+    background: #ddd;
+}
+
 .projects-grid {
     display: grid;
     grid-template-columns: repeat(5, minmax(clamp(12rem, 15vw, 18rem), 1fr));
@@ -202,6 +233,10 @@ body {
     background-color: #f7f7f7;
 }
 
+.other-month:hover {
+    cursor: pointer;
+}
+
 .calendar-body {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -238,6 +273,10 @@ body {
     padding: 0.25rem;
     background: #eee;
     font-size: 0.85rem;
+}
+
+.calendar-project:hover {
+    cursor: pointer;
 }
 
 .calendar-todo-title {

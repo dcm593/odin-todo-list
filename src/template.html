@@ -29,8 +29,23 @@
                     <p id="main-header-subtitle">Let's get the day started</p>
                 </div>
                 <div class="controls">
-                    <button>Sort</button>
-                    <button>Filter</button>
+                    <div class="control-wrapper">
+                        <button id="sort-btn">Sort</button>
+                        <div id="sort-panel" class="control-panel hidden">
+                            <div data-sort="priority-date">Priority + Due Date</div>
+                            <div data-sort="date">Due Date</div>
+                            <div data-sort="priority">Priority</div>
+                        </div>
+                    </div>
+                    <div class="control-wrapper">
+                        <button id="filter-btn">Filter</button>
+                        <div id="filter-panel" class="control-panel hidden">
+                            <div data-filter="all">All</div>
+                            <div data-filter="high">High</div>
+                            <div data-filter="medium">Medium</div>
+                            <div data-filter="low">Low</div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <!-- Dashboard content -->

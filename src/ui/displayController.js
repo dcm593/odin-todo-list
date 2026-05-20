@@ -1,13 +1,15 @@
 import { appController } from "../modules/appController.js";
 import { format } from "date-fns";
 import { createTodo } from "../modules/todo.js";
-import { ca, is } from "date-fns/locale";
 
+// globals
 let currentProjectIndex = null;
 let currentView = "dashboard";
 let previousView = "dashboard";
 const calendarOffsets = {};
 let currentCalendarDate = new Date();
+let currentSort = "priority-date"; // default sorting for dashboard
+let currentFilter = "all"; // show all priorities by default
 
 
 // Rendering sidebar
@@ -18,7 +20,7 @@ const renderProjects = () => {
     const allProjects = appController.getProjects().projects;
 
     allProjects.forEach((project, index) => {
-        if (project.isCompleted()) return; // skip completed projects in sidebar
+        if (project.isCompleted() || isOverdue(project)) return; // skip completed & overdue projects in sidebar
 
         const projectElement = document.createElement("div");
         projectElement.textContent = project.name;
@@ -107,28 +109,59 @@ const createProjectCard = (project, index) => {
     return card;
 };
 
-const getSortedProjects = (projects) => {
+const getProcessedProjects = (projects) => {
     const priorityMap = { "High": 3, "Medium": 2, "Low": 1 };
 
-    return [...projects].sort((a, b) => {
+    let result = [...projects];
+
+    // Filtering
+    if (currentFilter !== "all") {
+        result = result.filter(project => {
+           const summary = project.getSummary();
+           if (!summary) return false;
+
+           return summary.priority.toLowerCase() === currentFilter;
+        });
+    }
+
+    // Sorting
+    result.sort((a, b) => {
         const summaryA = a.getSummary();
         const summaryB = b.getSummary();
 
-        // Projects without todos should be sorted to the end
         if (!summaryA) return 1;
         if (!summaryB) return -1;
 
-        // Sort by priority
-        const priorityDifference = priorityMap[summaryB.priority] - priorityMap[summaryA.priority];
-
-        if (priorityDifference !== 0) {
-            return priorityDifference;
+        if (currentSort === "priority-date") {
+            const priorityDiff = priorityMap[summaryB.priority] - priorityMap[summaryA.priority];
+            if (priorityDiff !== 0) return priorityDiff;
+            return new Date(summaryA.dueDate) - new Date(summaryB.dueDate);
+        } else if (currentSort === "date") {
+            return new Date(summaryA.dueDate) - new Date(summaryB.dueDate);
+        } else if (currentSort === "priority") {
+            return priorityMap[summaryB.priority] - priorityMap[summaryA.priority];
         }
 
-        // Date comparison (earliest due date first)
-        return new Date(summaryA.dueDate) - new Date(summaryB.dueDate);
+        return 0;
+    });
+
+    return result;  
+};
+
+const isOverdue = (project) => {
+    if (project.isCompleted()) return false;
+
+    const now = new Date();
+
+    return project.getTodos().todos.some(todo => {
+        const data = todo.getData();
+        if (!data.dueDate) return false;
+
+        return new Date(data.dueDate) < now && !data.completed;
     });
 };
+
+
 
 // Rendering dashboard / projects grid view, and setup centralized view state management
 const renderDashboard = () => {
@@ -137,10 +170,10 @@ const renderDashboard = () => {
 
     const allProjects = appController.getProjects().projects;
 
-    const sortedProjects = getSortedProjects(allProjects);
+    const processedProjects = getProcessedProjects(allProjects);
 
-    sortedProjects.forEach((project) => {
-        if (project.isCompleted()) return; // skip completed projects in dashboard view
+    processedProjects.forEach((project) => {
+        if (project.isCompleted() || isOverdue(project)) return; // skip completed & overdue projects in dashboard view
 
         const index = allProjects.indexOf(project);
 
@@ -196,6 +229,10 @@ const updateHeaderUI = () => {
             headerSubtitle.textContent = "Visualize which fires to put out first";
             controls.classList.add("hidden");
             break;
+        case "backlog":
+            headerTitle.textContent = "Backlog";
+            headerSubtitle.textContent = "These were lost in the sauce :(";
+            controls.classList.add("hidden");
         case "project":
             controls.classList.add("hidden");
             break;
@@ -209,7 +246,15 @@ const openProject = (index) => {
     previousView = currentView;
 
     const backBtn = document.querySelector("#back-btn");
-    backBtn.textContent = previousView === "completed" ? "Return to Completed Projects" : "Return to Dashboard";
+    if (previousView === "completed") {
+        backBtn.textContent = "Return to Completed Projects";
+    } else if (previousView === "calendar") {
+        backBtn.textContent = "Return to Calendar";
+    } else if (previousView === "backlog") {
+        backBtn.textContent = "Return to Backlog";
+    } else {
+        backBtn.textContent = "Return to Dashboard";
+    }
 
     setView("project");
 };
@@ -342,9 +387,9 @@ const renderCompletedProjects = () => {
 
     const allProjects = appController.getProjects().projects;
 
-    const sortedProjects = getSortedProjects(allProjects);
+    const processedProjects = getProcessedProjects(allProjects);
 
-    sortedProjects.forEach((project) => {
+    processedProjects.forEach((project) => {
         if (!project.isCompleted()) return; // only show completed projects in this view
 
         const index = allProjects.indexOf(project);
@@ -490,7 +535,8 @@ const renderCalendar = () => {
                 <div class="calendar-project-name">Project: ${currentItem.project.name}</div>
             `;
 
-            projectDiv.addEventListener("click", () => {
+            projectDiv.addEventListener("click", (e) => {
+                e.stopPropagation();
                 openProject(currentItem.index);
             });
 
@@ -537,6 +583,22 @@ const goToNextMonth = () => {
     renderCalendar();
 };
 
+const renderBacklog = () => {
+    const grid = document.querySelector(".projects-grid");
+    grid.innerHTML = "";
+
+    const allProjects = appController.getProjects().projects;
+
+    const processedProjects = getProcessedProjects(allProjects);
+
+    processedProjects.forEach((project) => {
+        if (!isOverdue(project)) return; // only show overdue projects in backlog view
+
+        const index = allProjects.indexOf(project);
+        grid.appendChild(createProjectCard(project, index));
+    });
+};
+
 
 
 // Centralized function to refresh the UI based on current view state
@@ -553,6 +615,9 @@ const refreshUI = () => {
         case "calendar":
             renderCalendar();
             break;
+        case "backlog":
+            renderBacklog();
+            break;
         case "project":
             renderTodos(currentProjectIndex);
             break;
@@ -566,21 +631,69 @@ const init = () => {
 
     document.querySelector("#back-btn").addEventListener("click", goBack);
 
+    // Dashboard button
     document.querySelector("#dashboard-btn").addEventListener("click", () => {
         setView("dashboard");
     });
 
+    // Sort & filter buttons
+    const sortBtn = document.querySelector("#sort-btn");
+    const filterBtn = document.querySelector("#filter-btn");
+    const sortPanel = document.querySelector("#sort-panel");
+    const filterPanel = document.querySelector("#filter-panel");
+
+    sortBtn.addEventListener("click", () => {
+        sortPanel.classList.toggle("hidden");
+        filterPanel.classList.add("hidden");
+    });
+
+    filterBtn.addEventListener("click", () => {
+        filterPanel.classList.toggle("hidden");
+        sortPanel.classList.add("hidden");
+    });
+
+    sortPanel.querySelectorAll("div").forEach(option => {
+        option.addEventListener("click", () => {
+            currentSort = option.dataset.sort;
+            sortPanel.classList.add("hidden");
+            refreshUI();
+        });
+    });
+
+    filterPanel.querySelectorAll("div").forEach(option => {
+        option.addEventListener("click", () => {
+            currentFilter = option.dataset.filter;
+            filterPanel.classList.add("hidden");
+            refreshUI();
+        });
+    });
+
+    // Close sort/filter panels when clicking outside
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest(".control-wrapper")) {
+            sortPanel.classList.add("hidden");
+            filterPanel.classList.add("hidden");
+        }
+    });
+
+    // Calendar button
     document.querySelector("#calendar-btn").addEventListener("click", () => {
         currentCalendarDate = new Date(); // reset to current month when opening calendar
         setView("calendar");
     });
 
+    // Calendar navigation buttons
     document.querySelector("#calendar-prev-btn").addEventListener("click", goToPreviousMonth);
-
     document.querySelector("#calendar-next-btn").addEventListener("click", goToNextMonth);
 
+    // Completed projects button
     document.querySelector("#complete-btn").addEventListener("click", () => {
         setView("completed");
+    });
+
+    // Backlog button
+    document.querySelector("#backlog-btn").addEventListener("click", () => {
+        setView("backlog");
     });
 
     const dialog = document.querySelector("dialog");
