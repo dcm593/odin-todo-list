@@ -90,19 +90,36 @@ const createProjectCard = (project, index) => {
     card.append(header);
 
     if (summary) {
-        const todoTitle = document.createElement("h4");
+        // Row container (todo title + priority + due date on same line)
+        const infoRow = document.createElement("div");
+        infoRow.classList.add("project-info-row");
+
+        const todoTitle = document.createElement("span");
+        todoTitle.classList.add("card-todo-title");
         todoTitle.textContent = summary.title;
 
-        const dueDate = document.createElement("p");
+        const priority = document.createElement("span");
+        priority.classList.add("card-priority");
+        priority.textContent = summary.priority;
+        // Colour coding priority levels
+        priority.classList.add(`priority-${summary.priority.toLowerCase()}`);
+
+        const dueDate = document.createElement("span");
+        dueDate.classList.add("card-due-date");
         dueDate.textContent = `${format(new Date(summary.dueDate), "MMM dd, yyyy '@' h:mma")}`;
 
-        const priority = document.createElement("span");
-        priority.textContent = `${summary.priority} Priority`;
+        infoRow.append(todoTitle, priority, dueDate);
+
+        // Description box
+        const descriptionContainer = document.createElement("div");
+        descriptionContainer.classList.add("card-description-box");
 
         const description = document.createElement("p");
         description.textContent = summary.description;
 
-        card.append(todoTitle, dueDate, priority, description);
+        descriptionContainer.appendChild(description);
+
+        card.append(infoRow, descriptionContainer);
     }
 
     card.addEventListener("click", () => {

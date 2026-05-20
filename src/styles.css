@@ -122,7 +122,7 @@ body {
 
 .projects-grid {
     display: grid;
-    grid-template-columns: repeat(5, minmax(clamp(12rem, 15vw, 18rem), 1fr));
+    grid-template-columns: repeat(2, minmax(clamp(12rem, 15vw, 18rem), 1fr));
     gap: 1rem;
 }
 
@@ -177,6 +177,61 @@ body {
 .hidden {
     display: none !important;
 }
+
+.project-info-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.card-todo-title {
+    font-weight: bold;
+    flex: 1;
+}
+
+.card-due-date {
+    font-size: 0.85rem;
+    color: #555;
+}
+
+.card-priority {
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: white;
+}
+
+.priority-high {
+    background-color: #e74c3c; /* red */
+}
+
+.priority-medium {
+    background-color: #f1c40f; /* yellow */
+    color: black;
+}
+
+.priority-low {
+    background-color: #2ecc71; /* green */
+}
+
+.card-description-box {
+    background: #eee;
+    border-radius: 10px;
+    padding: 0.6rem;
+    font-size: 0.9rem;
+}
+
+.card-description-box p {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+
 
 /* Todo list inside project view */
 .todos-list {
