@@ -2,7 +2,7 @@ export const createTodo = (title, description, dueDate, priority, notes = "") =>
     let completed = false;
 
     const id = crypto.randomUUID();
-    
+
     const toggleCompleted = () => {
         completed = !completed;
     };

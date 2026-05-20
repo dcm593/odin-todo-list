@@ -129,6 +129,31 @@ const createProjectCard = (project, index) => {
     return card;
 };
 
+// Empty card for creating new projects in dashboard view
+const createAddProjectCard = () => {
+    const card = document.createElement("div");
+    card.classList.add("project-card", "add-project-card");
+
+    const plus = document.createElement("span");
+    plus.classList.add("add-project-plus");
+    plus.textContent = "+";
+
+    const label = document.createElement("span");
+    label.textContent = "Create New Project";
+
+    card.append(plus, label);
+
+    card.addEventListener("click", () => {
+        const dialog = document.querySelector("dialog");
+        const todoFormContainer = document.querySelector("#todo-form-container");
+        dialog.showModal();
+        todoFormContainer.innerHTML = "";
+        todoFormContainer.appendChild(createTodoForm());
+    });
+
+    return card;
+};
+
 const getProcessedProjects = (projects) => {
     const priorityMap = { "High": 3, "Medium": 2, "Low": 1 };
 
@@ -199,6 +224,8 @@ const renderDashboard = () => {
 
         grid.appendChild(createProjectCard(project, index));
     });
+
+    grid.appendChild(createAddProjectCard());
 };
 
 const setView = (view) => {

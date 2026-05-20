@@ -37,7 +37,7 @@ export const createProject = (name) => {
         dueDate: todo.dueDate,
         priority: todo.priority,
         description: todo.description,
-        title: todo.title 
+        title: todo.title
     };
 };
 
