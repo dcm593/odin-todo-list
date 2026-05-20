@@ -90,16 +90,19 @@ const createProjectCard = (project, index) => {
     card.append(header);
 
     if (summary) {
+        const todoTitle = document.createElement("h4");
+        todoTitle.textContent = summary.title;
+
         const dueDate = document.createElement("p");
-        dueDate.textContent = `Due: ${format(new Date(summary.dueDate), "MMM dd, yyyy '@' h:mma")}`;
+        dueDate.textContent = `${format(new Date(summary.dueDate), "MMM dd, yyyy '@' h:mma")}`;
 
         const priority = document.createElement("span");
-        priority.textContent = `Priority: ${summary.priority}`;
+        priority.textContent = `${summary.priority} Priority`;
 
         const description = document.createElement("p");
         description.textContent = summary.description;
 
-        card.append(dueDate, priority, description);
+        card.append(todoTitle, dueDate, priority, description);
     }
 
     card.addEventListener("click", () => {

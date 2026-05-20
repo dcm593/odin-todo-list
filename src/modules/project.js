@@ -17,26 +17,29 @@ export const createProject = (name) => {
 
     // Helper function to get a summary of the project (e.g. for dashboard cards)
     const getSummary = () => {
-        if (todos.length === 0) return null;
+    if (todos.length === 0) return null;
 
-        // Get the most urgent todo (highest priority, then earliest due date)
-        const priorityMap = { "High": 3, "Medium": 2, "Low": 1 };
-        const highestPriority = [...todos].sort((a, b) => {
-            return priorityMap[b.getData().priority] - priorityMap[a.getData().priority];
-        })[0].getData();
+    const priorityMap = { "High": 3, "Medium": 2, "Low": 1 };
 
-        const sortByDate = [...todos].sort((a, b) => {
-            return new Date(a.getData().dueDate) - new Date(b.getData().dueDate);
-        });
+    const todo = [...todos].sort((a, b) => {
+        const dataA = a.getData();
+        const dataB = b.getData();
 
-        const earliestDue = sortByDate[0].getData();
+        // Sort by priority first
+        const priorityDiff = priorityMap[dataB.priority] - priorityMap[dataA.priority];
+        if (priorityDiff !== 0) return priorityDiff;
 
-        return {
-            dueDate: earliestDue.dueDate,
-            priority: highestPriority.priority,
-            description: earliestDue.description
-        };
+        // Then by due date (earliest first)
+        return new Date(dataA.dueDate) - new Date(dataB.dueDate);
+    })[0].getData();
+
+    return {
+        dueDate: todo.dueDate,
+        priority: todo.priority,
+        description: todo.description,
+        title: todo.title 
     };
+};
 
     return { name, addTodo, getTodos, getSummary, toggleCompleted, isCompleted };
 };
