@@ -328,23 +328,8 @@ const renderTodos = (projectIndex) => {
         const item = document.createElement("div");
         item.classList.add("todo-item");
 
-        const title = document.createElement("span");
-        title.textContent = data.title;
-
-        const description = document.createElement("p");
-        description.textContent = data.description;
-
-        const dueDate = document.createElement("time");
-        dueDate.textContent = `Due: ${format(new Date(data.dueDate), "MMM dd, yyyy '@' h:mma")}`;
-
-        const priority = document.createElement("span");
-        priority.textContent = `Priority: ${data.priority}`;
-
-        const notes = document.createElement("textarea");
-        notes.value = data.notes;
-        notes.addEventListener("input", (e) => {
-            todo.setNotes(e.target.value);
-        });
+        const checkboxCol = document.createElement("div");
+        checkboxCol.classList.add("todo-item-checkbox-col");
 
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
@@ -353,7 +338,39 @@ const renderTodos = (projectIndex) => {
             todo.toggleCompleted();
         });
 
-        item.append(title, description, dueDate, priority, notes, checkbox);
+        checkboxCol.appendChild(checkbox);
+
+        const content = document.createElement("div");
+        content.classList.add("todo-item-content");
+
+        const header = document.createElement("div");
+        header.classList.add("todo-item-header");
+
+        const title = document.createElement("span");
+        title.classList.add("todo-item-title");
+        title.textContent = data.title;
+
+        const priority = document.createElement("span");
+        priority.classList.add("card-priority", `priority-${data.priority.toLowerCase()}`);
+        priority.textContent = data.priority;
+
+        header.append(title, priority);
+
+        const description = document.createElement("p");
+        description.textContent = data.description;
+
+        const dueDate = document.createElement("time");
+        dueDate.textContent = `Due: ${format(new Date(data.dueDate), "MMM dd, yyyy '@' h:mma")}`;
+
+        const notes = document.createElement("textarea");
+        notes.placeholder = "Notes";
+        notes.value = data.notes;
+        notes.addEventListener("input", (e) => {
+            todo.setNotes(e.target.value);
+        });
+
+        content.append(header, description, dueDate, notes);
+        item.append(checkboxCol, content);
         list.appendChild(item);
     });
 };
@@ -373,13 +390,23 @@ const createTodoForm = () => {
     titleInput.placeholder = "Todo Title";
     titleInput.classList.add("todo-title-input");
 
-    const descriptionInput = document.createElement("input");
+    const descriptionInput = document.createElement("textarea");
     descriptionInput.placeholder = "Description";
+    descriptionInput.rows = 3;
     descriptionInput.classList.add("todo-description-input");
 
     const dateInput = document.createElement("input");
     dateInput.type = "datetime-local";
+    dateInput.max = "9999-12-31T23:59";
     dateInput.classList.add("todo-date-input");
+    dateInput.addEventListener("input", () => {
+        if (!dateInput.value) return;
+        const dashIndex = dateInput.value.indexOf("-");
+        const year = parseInt(dateInput.value.slice(0, dashIndex), 10);
+        if (year > 9999) {
+            dateInput.value = "9999" + dateInput.value.slice(dashIndex);
+        }
+    });
 
     const prioritySelect = document.createElement("select");
     prioritySelect.classList.add("todo-priority-select");
