@@ -1,6 +1,7 @@
 import { appController } from "../modules/appController.js";
 import { format } from "date-fns";
 import { createTodo } from "../modules/todo.js";
+import trashIcon from "../assets/images/trash-icon.png";
 
 // globals
 let currentProjectIndex = null;
@@ -70,7 +71,11 @@ const createProjectCard = (project, index) => {
     });
 
     const deleteBtn = document.createElement("button");
-    deleteBtn.textContent = "🗑";
+    const deleteIcon = document.createElement("img");
+    deleteIcon.src = trashIcon;
+    deleteIcon.alt = "Delete";
+    deleteIcon.classList.add("delete-icon");
+    deleteBtn.appendChild(deleteIcon);
     deleteBtn.classList.add("delete-project-btn");
 
     deleteBtn.addEventListener("click", (e) => {
