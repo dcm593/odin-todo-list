@@ -125,6 +125,7 @@ body {
 .header-text {
     display: flex;
     flex-direction: column;
+    gap: 0.3rem;
 }
 
 #main-header-title {
@@ -213,6 +214,7 @@ body {
 }
 
 .project-card input[type="checkbox"] {
+    color: rgba(10, 25, 47, 0.6);
     align-self: flex-start;
 }
 
@@ -295,7 +297,7 @@ body {
 }
 
 .card-priority {
-    padding: 0.2rem 0.5rem;
+    padding: 0.2rem 0.4rem;
     border-radius: 999px;
     font-size: 0.75rem;
     font-weight: bold;
@@ -356,12 +358,46 @@ body {
 
 
 /* Todo list inside project view */
+.project-view {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.project-view-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.project-view-controls {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+
+#edit-project-btn,
+#complete-project-btn {
+    background: transparent;
+    border: 1px solid rgba(204,214,246,0.2);
+    color: #ccd6f6;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+#edit-project-btn:hover,
+#complete-project-btn:hover {
+    border-color: #64ffda;
+    color: #64ffda;
+}
+
 .project-title {
-    color: #e6f1ff;
+    color: #64ffda;
 }
 
 #back-btn {
-    align-self: flex-start;
     background: transparent;
     border: 1px solid rgba(204,214,246,0.2);
     color: #64ffda;
@@ -380,6 +416,30 @@ body {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+}
+
+.todos-done-label {
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(204,214,246,0.1);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #8892b0;
+}
+
+.todo-item-completed {
+    opacity: 0.4;
+}
+
+.todo-item-placeholder {
+    border: 1px dashed rgba(204,214,246,0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    color: rgba(136,146,176,0.5);
+    font-size: 0.85rem;
+    font-style: italic;
+    text-align: center;
 }
 
 .todo-item {
@@ -404,8 +464,28 @@ body {
 .todo-item-checkbox-col input[type="checkbox"] {
     width: 1.5rem;
     height: 1.5rem;
-    accent-color: #64ffda;
     cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: rgba(10,25,47,0.6);
+    border: 1px solid rgba(204,214,246,0.1);
+    border-radius: 4px;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.todo-item-checkbox-col input[type="checkbox"]:checked {
+    background-color: #64ffda;
+    border-color: #64ffda;
+    /* Dark checkmark drawn as an inline SVG to match the theme background */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%230a192f' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' d='M2 8l4 4 8-8'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 75%;
+}
+
+.todo-item-checkbox-col input[type="checkbox"]:focus-visible {
+    outline: 2px solid #64ffda;
+    outline-offset: 2px;
 }
 
 .todo-item-content {
@@ -422,7 +502,7 @@ body {
 }
 
 .todo-item-title {
-    color: #ccd6f6;
+    color: #a1e3d3;
     font-weight: bold;
 }
 
@@ -465,6 +545,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    flex: 1;       /* fill remaining height in main-content */
+    min-height: 0; /* allow shrinking below intrinsic content size */
 }
 
 .calendar-header {
@@ -500,7 +582,10 @@ body {
 .calendar-body {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: auto repeat(6, 1fr); /* day-name row sizes to content; 6 data rows share remaining height */
     border: 1px solid rgba(204,214,246,0.1);
+    flex: 1;       /* fill remaining height in calendar-view */
+    min-height: 0;
 }
 
 .calendar-day-name,
@@ -520,9 +605,9 @@ body {
 }
 
 .calendar-cell {
-    min-height: 120px;
-    padding: 0.5rem;
-    position: relative;
+    min-height: 80px; /* floor to prevent collapse on small viewports */
+    padding: 0.5rem 0.5rem 1.5rem; /* bottom reserved for down arrow whether present or not */
+    position: relative; /* anchor for absolutely-positioned arrows */
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -553,8 +638,13 @@ body {
     padding: 0.3rem 0.4rem;
     background: #112240;
     border: 1px solid rgba(100,255,218,0.15);
-    font-size: 0.8rem;
+    font-size: 1rem;
     color: #ccd6f6;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10%;
+    overflow: hidden;
 }
 
 .other-month .calendar-project {
@@ -574,16 +664,19 @@ body {
 
 .calendar-todo-title {
     font-weight: bold;
-    color: #ccd6f6;
+    color: #a1e3d3;
 }
 
 .other-month .calendar-todo-title {
-    color: #8892b0;
+    color: #729e93;
 }
 
 .calendar-priority {
     font-size: 0.75rem;
     color: #8892b0;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
 }
 
 .calendar-project-name {
@@ -597,7 +690,6 @@ body {
 }
 
 .calendar-arrow {
-    position: absolute;
     background: transparent;
     border: none;
     cursor: pointer;
@@ -610,12 +702,16 @@ body {
     color: #64ffda;
 }
 
+/* Up arrow stays absolute so it floats in the date-row area above the card */
 .calendar-arrow.up {
+    position: absolute;
     top: 4px;
     right: 4px;
 }
 
+/* Down arrow is a grid item in the third row, mirroring the up arrow below the card */
 .calendar-arrow.down {
+    position: absolute;
     bottom: 4px;
     right: 4px;
 }
@@ -687,6 +783,24 @@ dialog legend {
     width: 100%;
 }
 
+#todo-form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: 33rem;
+    overflow-y: auto;
+    /* Prevent scrollbar from clipping inner content */
+    padding-right: 0.25rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100,255,218,0.3) transparent;
+}
+
+/* Separator between todo rows when multiple are added */
+.todo-form-row + .todo-form-row {
+    padding-top: 1rem;
+    border-top: 1px solid rgba(204,214,246,0.1);
+}
+
 dialog input,
 dialog textarea,
 dialog select {
@@ -722,6 +836,26 @@ dialog input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
     width: 100%;
+    position: relative; /* anchor for the absolute-positioned remove button */
+}
+
+/* × button shown on each row in edit mode */
+.remove-todo-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: transparent;
+    border: none;
+    color: #8892b0;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 0.2rem 0.4rem;
+    cursor: pointer;
+    transition: color 0.15s;
+}
+
+.remove-todo-btn:hover {
+    color: #e74c3c;
 }
 
 .todo-title-input,

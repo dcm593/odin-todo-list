@@ -41,5 +41,9 @@ export const createProject = (name) => {
     };
 };
 
-    return { name, addTodo, getTodos, getSummary, toggleCompleted, isCompleted };
+    const clearTodos = () => {
+        todos.length = 0;
+    };
+
+    return { name, addTodo, getTodos, clearTodos, getSummary, toggleCompleted, isCompleted };
 };

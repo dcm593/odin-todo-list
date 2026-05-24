@@ -1,6 +1,6 @@
-import { createProject } from "./project";
-import { createTodo } from "./todo";
-import { storage } from "./storage";
+import { createProject } from "./project.js";
+import { createTodo } from "./todo.js";
+import { storage } from "./storage.js";
 
 const projects = [];
 
