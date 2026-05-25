@@ -638,12 +638,13 @@ body {
     padding: 0.3rem 0.4rem;
     background: #112240;
     border: 1px solid rgba(100,255,218,0.15);
-    font-size: 1rem;
+    /* Scale font down on narrower viewports (calendar has 7 cols, each ≈ (100vw-260px)/7) */
+    font-size: clamp(0.7rem, 1.1vw, 1rem);
     color: #ccd6f6;
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 10%;
+    gap: clamp(0.1rem, 1%, 0.35rem); /* was 10% — keeps items from pushing out of bounds */
     overflow: hidden;
 }
 
@@ -665,6 +666,9 @@ body {
 .calendar-todo-title {
     font-weight: bold;
     color: #a1e3d3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .other-month .calendar-todo-title {
@@ -672,17 +676,22 @@ body {
 }
 
 .calendar-priority {
-    font-size: 0.75rem;
+    font-size: clamp(0.6rem, 0.85vw, 0.75rem);
     color: #8892b0;
     display: flex;
     align-items: center;
     gap: 0.35rem;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .calendar-project-name {
-    font-size: 0.65rem;
+    font-size: clamp(0.55rem, 0.75vw, 0.65rem);
     color: #64ffda;
     font-style: italic;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .other-month .calendar-project-name {
