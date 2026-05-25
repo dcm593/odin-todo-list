@@ -591,6 +591,8 @@ body {
 .calendar-day-name,
 .calendar-cell {
     border: 1px solid rgba(204,214,246,0.1);
+    /* Prevent 1fr columns from expanding to min-content width */
+    min-width: 0;
 }
 
 .calendar-day-name {
@@ -642,6 +644,7 @@ body {
     font-size: clamp(0.7rem, 1.1vw, 1rem);
     color: #ccd6f6;
     flex: 1;
+    min-width: 0; /* prevent flex item from resisting shrink below content width */
     display: flex;
     flex-direction: column;
     gap: clamp(0.1rem, 1%, 0.35rem); /* was 10% — keeps items from pushing out of bounds */
