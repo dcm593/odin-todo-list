@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo List</title>
+<script defer src="main.js"></script></head>
+<body>
+    <div id="app">
+        <!-- Sidebar containing projects -->
+        <aside class="sidebar">
+            <div class="nav">
+                <div id="dashboard-btn">Dashboard</div>
+                <div id="calendar-btn">Calendar</div>
+                <div id="complete-btn">Complete</div>
+                <div id="backlog-btn">Backlog</div>
+            </div>
+            <div class="projects-section">
+                <h2>Projects</h2>
+                <div class="projects"></div>
+                <button id="add-project-btn">+ New Project</button> <!-- Move new project button to dashboard area? Maybe below welcome text/above card grid? -->
+            </div>
+        </aside> 
+        <!-- Main content area for displaying todos -->
+        <main class="main-content">
+            <div class="header">
+                <div class="header-text">
+                    <h2 id="main-header-title">Welcome, Damon</h2>
+                    <p id="main-header-subtitle">Let's get the day started</p>
+                </div>
+                <div class="controls">
+                    <div class="control-wrapper">
+                        <button id="sort-btn">Sort</button>
+                        <div id="sort-panel" class="control-panel hidden">
+                            <div data-sort="priority-date">Priority + Due Date</div>
+                            <div data-sort="date">Due Date</div>
+                            <div data-sort="priority">Priority</div>
+                        </div>
+                    </div>
+                    <div class="control-wrapper">
+                        <button id="filter-btn">Filter</button>
+                        <div id="filter-panel" class="control-panel hidden">
+                            <div data-filter="all">All</div>
+                            <div data-filter="high">High</div>
+                            <div data-filter="medium">Medium</div>
+                            <div data-filter="low">Low</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Dashboard content -->
+            <div class="dashboard-view">
+                <div class="projects-grid"></div>
+            </div>
+            <!-- Project view -->
+            <div class="project-view hidden">
+                <div class="project-view-header">
+                    <h2 class="project-title"></h2>
+                    <button id="back-btn">Return to dashboard</button>
+                    <div class="project-view-controls">
+                        <button id="edit-project-btn">Edit</button>
+                        <button id="complete-project-btn">Mark Complete</button>
+                    </div>
+                </div>
+                <div class="todos-list"></div>
+            </div>
+            <!-- Calendar view -->
+            <div class="calendar-view hidden">
+                <div class="calendar-header">
+                    <button id="calendar-prev-btn" class="calendar-nav-btn">‹</button>
+                    <h2 class="calendar-month"></h2>
+                    <button id="calendar-next-btn" class="calendar-nav-btn">›</button>
+                </div>
+                <div class="calendar-body"></div>
+            </div>
+        </main>
+    </div>
+    <dialog>
+        <form>
+            <button type="button" value="cancel" formmethod="dialog" id="close">&#10006;</button>
+            <fieldset>
+                <legend>New Project</legend>
+                <input type="text" id="project-name" name="project-name" placeholder="Project Name" required/>
+                <legend>Todo List</legend>
+                <div id="todo-form-container"></div>
+                <button type ="button" id="add-todo-btn">+ Add Todo</button>
+                <button type="button" value="cancel" formmethod="dialog" id="cancel">Cancel</button>
+                <button type="submit" id="submit-btn" value="default">Create Project</button>
+            </fieldset>
+        </form>
+    </dialog>
+</body>
+</html>
