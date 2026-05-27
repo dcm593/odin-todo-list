@@ -944,6 +944,13 @@ const init = () => {
         dialog.close();
     });
 
+    dialog.addEventListener("click", (e) => {
+        if (e.target === dialog) {
+            resetDialog();
+            dialog.close();
+        }
+    });
+
     document.querySelector("#edit-project-btn").addEventListener("click", () => {
         openEditDialog();
     });
