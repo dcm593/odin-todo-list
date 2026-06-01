@@ -14,6 +14,7 @@ let currentFilter = "all"; // show all priorities by default
 let isEditMode = false;
 
 
+
 // Rendering sidebar
 const renderProjects = () => {
     const projectsContainer = document.querySelector(".projects");
@@ -286,6 +287,7 @@ const updateHeaderUI = () => {
             headerTitle.textContent = "Backlog";
             headerSubtitle.textContent = "These were lost in the sauce :(";
             controls.classList.add("hidden");
+            break;
         case "project":
             controls.classList.add("hidden");
             break;
