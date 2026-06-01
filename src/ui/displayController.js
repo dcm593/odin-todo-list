@@ -486,6 +486,7 @@ const createTodoForm = (existingData = null) => {
         dateInput.value = existingData.dueDate || "";
         prioritySelect.value = existingData.priority || "Low";
         row.dataset.notes = existingData.notes || "";
+        row.dataset.completed = existingData.completed ? "true" : "false";
     }
 
     row.append(titleInput, descriptionInput, dateInput, prioritySelect);
@@ -519,8 +520,11 @@ document.querySelector("form").addEventListener("submit", (e) => {
             const dueDate = row.querySelector(".todo-date-input").value;
             const priority = row.querySelector(".todo-priority-select").value;
             const notes = row.dataset.notes || "";
+            const completed = row.dataset.completed === "true";
 
-            project.addTodo(createTodo(title, description, dueDate, priority, notes));
+            const todo = createTodo(title, description, dueDate, priority, notes);
+            if (completed) todo.toggleCompleted();
+            project.addTodo(todo);
         });
 
         appController.saveProjects();
